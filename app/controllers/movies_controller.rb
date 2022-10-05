@@ -42,7 +42,7 @@ class MoviesController < ApplicationController
 
     session[:ratings] = params[:ratings] unless params[:commit] == nil
     session[:sort] = params[:sort] unless params[:sort] == nil
-    flash[:notice] = "#{params}"
+#    flash[:notice] = "#{params}"
   end
 
   def new
