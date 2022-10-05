@@ -12,8 +12,8 @@ class MoviesController < ApplicationController
     @ratings_to_show = []
 
     @ratings_to_show = params[:ratings].keys unless params[:ratings] == nil
+
     @movies = Movie.with_ratings(@ratings_to_show)
-    flash[:notice] = "#{params}"
 
     @ratings_hash = Hash.new
     @ratings_to_show.each { |r| @ratings_hash["#{r}"] = "1"}
@@ -25,6 +25,10 @@ class MoviesController < ApplicationController
       @hightlight_release_date_header = true
     end
     @movies = @movies.order(params[:sort])
+
+#    session[:ratings] = params[:ratings] unless params[:commit] == nil
+ #   session[:sort] = params[:sort]
+#    flash[:notice] = "#{params}"
   end
 
   def new
