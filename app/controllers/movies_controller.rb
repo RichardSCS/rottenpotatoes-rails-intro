@@ -7,16 +7,41 @@ class MoviesController < ApplicationController
   end
 
   def index
+    session[:sort] = if params[:sort].present?
+                        params[:sort]
+                      else
+                        session[:sort] || 'id'
+                      end
+    session[:ratings] = if params[:ratings].present?
+                          params[:ratings]
+#			elsif session[:ratings] == nil
+#			  nil
+                        else
+                          session[:ratings] || { 'G' => '1', 'PG' => '1', 'PG-13' => '1', 'R' => '1' } 
+                        end
+
+    if !(params[:sort].present? && params[:ratings].present?)
+      redirect_to movies_path(sort: session[:sort], ratings: session[:ratings])
+      return
+    end
+=begin	  
+    if params[:home] == '1' || params[:commit] == 'Refresh'
+#      flash[:notice] = "Made the redirect"
+      redirect_to movies_path(sort: params[:sort], ratings: session[:ratings])
+      return
+    end
+=end
     @all_ratings = Movie.all_ratings.sort
+    if params[:ratings] == nil
+      @building_hash = Hash.new
+      @all_ratings.each { |r| @building_hash["#{r}"] = "1"}
+      params[:ratings] = @building_hash
+    end
 
     if session[:ratings] == nil
       @ratings_to_show = @all_ratings
-    elsif params[:commit] == "Refresh" || !(params[:sort] == nil)
-      if params[:ratings] == nil
-        @ratings_to_show = []
-      else
-        @ratings_to_show = params[:ratings].keys
-      end
+    elsif session[:ratings] == []
+      @ratings_to_show = []
     else
       @ratings_to_show = session[:ratings].keys
     end
@@ -26,22 +51,23 @@ class MoviesController < ApplicationController
     @ratings_hash = Hash.new
     @ratings_to_show.each { |r| @ratings_hash["#{r}"] = "1"}
 
-    if !(params[:sort] == nil)
+=begin    if !(params[:sort] == nil)
       @current = params
     elsif !(session[:sort] == nil)
       @current = session
     end
-
-    case @current[:sort]
+=end
+    case params[:sort]
     when 'title'
       @hightlight_title_header = true
     when 'release_date'
       @hightlight_release_date_header = true
     end
-    @movies = @movies.order(@current[:sort])
+    @movies = @movies.order(params[:sort])
+   # end
 
-    session[:ratings] = params[:ratings] unless params[:commit] == nil
-    session[:sort] = params[:sort] unless params[:sort] == nil
+    session[:ratings] = params[:ratings]
+    session[:sort] = params[:sort]
 #    flash[:notice] = "#{params}"
   end
 
